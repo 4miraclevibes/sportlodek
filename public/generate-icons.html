@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const svgContent = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="256" cy="256" r="256" fill="#10B981"/>
+            <g transform="translate(256, 256)">
+                <ellipse cx="0" cy="0" rx="120" ry="80" fill="#ffffff" opacity="0.9"/>
+                <path d="M-120 0 Q-60 -40 0 0 Q60 40 120 0" stroke="#10B981" stroke-width="8" fill="none"/>
+                <path d="M-120 0 Q-60 40 0 0 Q60 -40 120 0" stroke="#10B981" stroke-width="8" fill="none"/>
+                <circle cx="0" cy="0" r="15" fill="#10B981"/>
+                <circle cx="-60" cy="-30" r="8" fill="#10B981"/>
+                <circle cx="60" cy="-30" r="8" fill="#10B981"/>
+                <circle cx="-60" cy="30" r="8" fill="#10B981"/>
+                <circle cx="60" cy="30" r="8" fill="#10B981"/>
+            </g>
+            <text x="256" y="420" font-family="Arial, sans-serif" font-size="120" font-weight="bold" text-anchor="middle" fill="#ffffff">S</text>
+        </svg>`;
+
+        function generateIcon(size) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = size;
+            canvas.height = size;
+
+            const img = new Image();
+            const svgBlob = new Blob([svgContent], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(svgBlob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+
+                // Download the PNG
+                const link = document.createElement('a');
+                link.download = `icon-${size}x${size}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+
+                URL.revokeObjectURL(url);
+            };
+
+            img.src = url;
+        }
+
+        // Generate all sizes
+        sizes.forEach(size => {
+            setTimeout(() => generateIcon(size), 100);
+        });
+    </script>
+    <button onclick="sizes.forEach(size => generateIcon(size))">Generate All Icons</button>
+</body>
+</html>
