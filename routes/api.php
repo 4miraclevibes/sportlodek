@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\EdupayController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
@@ -71,3 +72,6 @@ Route::get('/test', function () {
         'timestamp' => now()->format('Y-m-d H:i:s'),
     ]);
 });
+
+// EDUPAY API - Public routes (tidak perlu authentication)
+Route::post('payment-notification/{code}', [EdupayController::class, 'paymentNotification']);

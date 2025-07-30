@@ -12,6 +12,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
@@ -98,13 +100,31 @@ class TransactionController extends Controller
             }
 
             // Buat payment otomatis untuk transaction ini
-            Payment::create([
+            $payment = Payment::create([
                 'transaction_id' => $transaction->id,
                 'merchant_id' => $merchantId,
                 'user_id' => Auth::id(),
                 'total' => $totalPrice,
                 'status' => 'pending',
             ]);
+
+                        // Hit EduPay API untuk semua payment method
+            // Load transaction dengan merchant dan user relationship
+            $transactionWithRelations = $transaction->load(['merchant.user']);
+
+            $edupayResponse = $this->edupayCreatePayment(
+                $payment->code,
+                $totalPrice,
+                $transactionWithRelations->merchant->user->email
+            );
+
+            if ($edupayResponse) {
+                // Update payment dengan response dari EduPay
+                $payment->update([
+                    'edupay_payment_id' => $edupayResponse['payment_id'] ?? null,
+                    'edupay_payment_url' => $edupayResponse['payment_url'] ?? null,
+                ]);
+            }
 
             $transactions[] = $transaction->load(['merchant', 'transactionDetails.product', 'payment']);
         }
@@ -274,5 +294,46 @@ class TransactionController extends Controller
                 ];
             })
         ]);
+    }
+
+    private function edupayCreatePayment($code, $total, $email)
+    {
+        try {
+            $response = Http::post('https://edupay.justputoff.com/api/service/storePayment', [
+                'service_id' => 10, // Service ID untuk Sportlodek
+                'total' => $total,
+                'code' => $code,
+                'email' => $email,
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            } else {
+                Log::error('EduPay API Error', [
+                    'status' => $response->status(),
+                    'response' => $response->json(),
+                    'request' => [
+                        'service_id' => 10,
+                        'total' => $total,
+                        'code' => $code,
+                        'email' => $email,
+                    ]
+                ]);
+
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error('EduPay API Exception', [
+                'message' => $e->getMessage(),
+                'request' => [
+                    'service_id' => 10,
+                    'total' => $total,
+                    'code' => $code,
+                    'email' => $email,
+                ]
+            ]);
+
+            return null;
+        }
     }
 }
