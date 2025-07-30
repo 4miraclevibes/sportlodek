@@ -65,68 +65,101 @@ class TransactionController extends Controller
         // Group cart items by merchant
         $groupedCart = $cartItems->groupBy('merchant_id');
 
-        $transactions = [];
+                $transactions = [];
 
         foreach ($groupedCart as $merchantId => $items) {
-            // Hitung total price untuk merchant ini
-            $totalPrice = $items->sum('total_price');
-            $startTime = $items->first()->start; // Ambil start time dari item pertama
+            try {
+                DB::beginTransaction();
 
-                        // Buat transaction
-            $transaction = Transaction::create([
-                'user_id' => Auth::id(),
-                'merchant_id' => $merchantId,
-                'start' => $startTime,
-                'total_price' => $totalPrice,
-                'status' => 'pending',
-                'payment_method' => $request->payment_method,
-            ]);
+                // Hitung total price untuk merchant ini
+                $totalPrice = $items->sum('total_price');
+                $startTime = $items->first()->start; // Ambil start time dari item pertama
 
-            // Buat transaction details untuk setiap jam
-            foreach ($items as $cartItem) {
-                for ($hour = 0; $hour < $cartItem->quantity; $hour++) {
-                    $currentHour = $cartItem->start + $hour;
-                    if ($currentHour >= 24) {
-                        $currentHour = $currentHour - 24;
+                // Buat transaction
+                $transaction = Transaction::create([
+                    'user_id' => Auth::id(),
+                    'merchant_id' => $merchantId,
+                    'start' => $startTime,
+                    'total_price' => $totalPrice,
+                    'status' => 'pending',
+                    'payment_method' => $request->payment_method,
+                ]);
+
+                // Buat transaction details untuk setiap jam
+                foreach ($items as $cartItem) {
+                    for ($hour = 0; $hour < $cartItem->quantity; $hour++) {
+                        $currentHour = $cartItem->start + $hour;
+                        if ($currentHour >= 24) {
+                            $currentHour = $currentHour - 24;
+                        }
+
+                        TransactionDetail::create([
+                            'transaction_id' => $transaction->id,
+                            'product_id' => $cartItem->product_id,
+                            'hour' => $currentHour,
+                            'price_per_hour' => $cartItem->price_per_hour,
+                        ]);
                     }
-
-                    TransactionDetail::create([
-                        'transaction_id' => $transaction->id,
-                        'product_id' => $cartItem->product_id,
-                        'hour' => $currentHour,
-                        'price_per_hour' => $cartItem->price_per_hour,
-                    ]);
                 }
-            }
 
-            // Buat payment otomatis untuk transaction ini
-            $payment = Payment::create([
-                'transaction_id' => $transaction->id,
-                'merchant_id' => $merchantId,
-                'user_id' => Auth::id(),
-                'total' => $totalPrice,
-                'status' => 'pending',
-            ]);
+                // Buat payment otomatis untuk transaction ini
+                $payment = Payment::create([
+                    'transaction_id' => $transaction->id,
+                    'merchant_id' => $merchantId,
+                    'user_id' => Auth::id(),
+                    'total' => $totalPrice,
+                    'status' => 'pending',
+                ]);
 
-                        // Hit EduPay API untuk semua payment method
-            // Load transaction dengan merchant dan user relationship
-            $transactionWithRelations = $transaction->load(['merchant.user']);
+                // Hit EduPay API untuk semua payment method
+                // Load transaction dengan merchant dan user relationship
+                $transactionWithRelations = $transaction->load(['merchant.user']);
 
-            $edupayResponse = $this->edupayCreatePayment(
-                $payment->code,
-                $totalPrice,
-                $transactionWithRelations->merchant->user->email
-            );
+                $edupayResponse = $this->edupayCreatePayment(
+                    $payment->code,
+                    $totalPrice,
+                    $transactionWithRelations->merchant->user->email
+                );
 
-            if ($edupayResponse) {
+                if (!$edupayResponse) {
+                    // Jika EduPay API gagal, rollback database transaction
+                    DB::rollBack();
+
+                    return response()->json([
+                        'message' => 'Gagal membuat payment di EduPay. Silakan coba lagi.',
+                        'error' => 'EDUPAY_API_ERROR',
+                        'hint' => 'Terjadi kesalahan saat menghubungi payment gateway'
+                    ], 500);
+                }
+
                 // Update payment dengan response dari EduPay
                 $payment->update([
                     'edupay_payment_id' => $edupayResponse['payment_id'] ?? null,
                     'edupay_payment_url' => $edupayResponse['payment_url'] ?? null,
                 ]);
-            }
 
-            $transactions[] = $transaction->load(['merchant', 'transactionDetails.product', 'payment']);
+                // Commit database transaction
+                DB::commit();
+
+                $transactions[] = $transaction->load(['merchant', 'transactionDetails.product', 'payment']);
+
+            } catch (\Exception $e) {
+                // Rollback database transaction jika terjadi error
+                DB::rollBack();
+
+                Log::error('Checkout Error', [
+                    'user_id' => Auth::id(),
+                    'merchant_id' => $merchantId,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'message' => 'Terjadi kesalahan saat membuat booking. Silakan coba lagi.',
+                    'error' => 'DATABASE_ERROR',
+                    'hint' => 'Terjadi kesalahan pada database'
+                ], 500);
+            }
         }
 
         // Clear cart setelah checkout

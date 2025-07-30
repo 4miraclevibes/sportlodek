@@ -698,14 +698,24 @@
                     });
                 }
             })
-            .catch(error => {
+                        .catch(error => {
                 console.error('Error:', error);
                 hideCustomAlert();
-                showCustomAlert({
-                    title: 'Error',
-                    message: 'Terjadi kesalahan saat melakukan checkout. Silakan coba lagi.',
-                    type: 'error'
-                });
+
+                // Handle specific error responses
+                if (error.message && error.message.includes('500')) {
+                    showCustomAlert({
+                        title: 'Payment Gateway Error',
+                        message: 'Gagal menghubungi payment gateway. Silakan coba lagi dalam beberapa saat.',
+                        type: 'error'
+                    });
+                } else {
+                    showCustomAlert({
+                        title: 'Error',
+                        message: 'Terjadi kesalahan saat melakukan checkout. Silakan coba lagi.',
+                        type: 'error'
+                    });
+                }
             });
         }
 
