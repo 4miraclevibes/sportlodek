@@ -12,7 +12,7 @@ use App\Http\Controllers\Merchant\PaymentController;
 use App\Http\Controllers\Merchant\ProfileController as MerchantProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 
 // Landing page route (hapus yang lama)
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
@@ -64,6 +64,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/migrate-fresh', function () {
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+    return response()->json([
+        'message' => 'Database migrated and seeded successfully',
+        'timestamp' => now()->format('Y-m-d H:i:s'),
+    ]);
 });
 
 require __DIR__.'/auth.php';
