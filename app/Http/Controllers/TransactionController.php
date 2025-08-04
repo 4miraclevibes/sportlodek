@@ -132,11 +132,11 @@ class TransactionController extends Controller
                     ], 500);
                 }
 
-                // Update payment dengan response dari EduPay
-                $payment->update([
-                    'edupay_payment_id' => $edupayResponse['payment_id'] ?? null,
-                    'edupay_payment_url' => $edupayResponse['payment_url'] ?? null,
-                ]);
+                // // Update payment dengan response dari EduPay
+                // $payment->update([
+                //     'edupay_payment_id' => $edupayResponse['payment_id'] ?? null,
+                //     'edupay_payment_url' => $edupayResponse['payment_url'] ?? null,
+                // ]);
 
                 // Commit database transaction
                 DB::commit();
