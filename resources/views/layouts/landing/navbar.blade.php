@@ -1,8 +1,28 @@
 <!-- Status Bar -->
 <div class="status-bar">
     <span>Sportlodek</span>
-    <span>9:41</span>
+    <span id="current-time">9:41</span>
 </div>
+
+<script>
+function updateTime() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const timeString = `${hours}:${minutes}`;
+
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.textContent = timeString;
+    }
+}
+
+// Update waktu setiap detik
+setInterval(updateTime, 1000);
+
+// Update waktu saat halaman dimuat
+document.addEventListener('DOMContentLoaded', updateTime);
+</script>
 
 <!-- App Header -->
 <div class="bg-white px-4 py-3 flex items-center justify-between">
