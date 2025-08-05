@@ -193,7 +193,7 @@
 			"name": "Merchant Management",
 			"item": [
 				{
-					"name": "Create Merchant",
+					"name": "Create Merchant (API)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -208,7 +208,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user_id\": 1,\n    \"name\": \"Futsal Center Jakarta\",\n    \"address\": \"Jl. Sudirman No. 123, Jakarta\",\n    \"phone\": \"021-1234567\",\n    \"status\": \"active\",\n    \"open\": 8,\n    \"close\": 22,\n    \"banner\": \"banner.jpg\"\n}"
+							"raw": "{\n    \"name\": \"Futsal Center Jakarta\",\n    \"address\": \"Jl. Sudirman No. 123, Jakarta\",\n    \"phone\": \"021-1234567\",\n    \"status\": \"active\",\n    \"open\": 8,\n    \"close\": 22,\n    \"banner\": \"banner.jpg\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/merchants",
@@ -217,6 +217,37 @@
 							],
 							"path": [
 								"merchants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Merchant (Web)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-CSRF-TOKEN",
+								"value": "{{csrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Futsal Center Jakarta\",\n    \"address\": \"Jl. Sudirman No. 123, Jakarta\",\n    \"phone\": \"021-1234567\",\n    \"status\": \"active\",\n    \"open\": 8,\n    \"close\": 22\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/merchant/register",
+							"host": [
+								"http://localhost:8000"
+							],
+							"path": [
+								"merchant",
+								"register"
 							]
 						}
 					},
@@ -271,6 +302,37 @@
 							"path": [
 								"merchants",
 								"validation-rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Merchant (Web)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-CSRF-TOKEN",
+								"value": "{{csrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Futsal Center Jakarta\",\n    \"address\": \"Jl. Sudirman No. 123, Jakarta\",\n    \"phone\": \"021-1234567\",\n    \"status\": \"active\",\n    \"open\": 8,\n    \"close\": 22\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/merchant/register",
+							"host": [
+								"http://localhost:8000"
+							],
+							"path": [
+								"merchant",
+								"register"
 							]
 						}
 					},

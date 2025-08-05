@@ -10,6 +10,7 @@ use App\Http\Controllers\Merchant\ProductController;
 use App\Http\Controllers\Merchant\TransactionController;
 use App\Http\Controllers\Merchant\PaymentController;
 use App\Http\Controllers\Merchant\ProfileController as MerchantProfileController;
+use App\Http\Controllers\MerchantController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
@@ -45,6 +46,9 @@ Route::middleware(['auth', 'check.role'])->group(function () {
     Route::get('/profile-mobile', [LandingProfileController::class, 'index'])->name('profile.mobile');
     Route::put('/api/profile', [LandingProfileController::class, 'update']);
     Route::put('/api/change-password', [LandingProfileController::class, 'changePassword']);
+    
+    // Merchant registration route
+    Route::post('/merchant/register', [MerchantController::class, 'store'])->name('merchant.register');
 
     // Merchant routes
     Route::prefix('merchant')->name('merchant.')->group(function () {

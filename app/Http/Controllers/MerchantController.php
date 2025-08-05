@@ -24,6 +24,16 @@ class MerchantController extends Controller
             ], 401);
         }
 
+        // Cek apakah user sudah memiliki merchant
+        $user = Auth::user();
+        if ($user->merchant) {
+            return response()->json([
+                'message' => 'Anda sudah terdaftar sebagai merchant.',
+                'error' => 'MERCHANT_ALREADY_EXISTS',
+                'hint' => 'User hanya bisa memiliki satu merchant'
+            ], 400);
+        }
+
         // Definisikan rules validasi
         $rules = [
             'name' => 'required|string|max:255',
@@ -56,7 +66,7 @@ class MerchantController extends Controller
             'close.integer' => 'Jam tutup harus berupa angka.',
             'close.min' => 'Jam tutup minimal 0.',
             'close.max' => 'Jam tutup maksimal 24.',
-            'close.business_hours' => 'Jam tutup harus lebih besar dari jam buka.',
+            'close.gt' => 'Jam tutup harus lebih besar dari jam buka.',
             'banner.string' => 'Banner harus berupa teks.',
             'banner.max' => 'Banner maksimal 255 karakter.',
         ];
@@ -105,7 +115,7 @@ class MerchantController extends Controller
             'phone' => 'sometimes|required|string|max:20',
             'status' => 'sometimes|required|string|in:active,inactive,pending',
             'open' => 'sometimes|required|integer|min:0|max:24',
-            'close' => 'sometimes|required|integer|min:0|max:24|business_hours',
+            'close' => 'sometimes|required|integer|min:0|max:24|gt:open',
             'banner' => 'sometimes|nullable|string|max:255',
         ];
 
@@ -130,7 +140,7 @@ class MerchantController extends Controller
             'close.integer' => 'Jam tutup harus berupa angka.',
             'close.min' => 'Jam tutup minimal 0.',
             'close.max' => 'Jam tutup maksimal 24.',
-            'close.business_hours' => 'Jam tutup harus lebih besar dari jam buka.',
+            'close.gt' => 'Jam tutup harus lebih besar dari jam buka.',
             'banner.string' => 'Banner harus berupa teks.',
             'banner.max' => 'Banner maksimal 255 karakter.',
         ];

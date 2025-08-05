@@ -286,6 +286,10 @@
             border-color: #10B981;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
+        .form-input[rows] {
+            resize: vertical;
+            min-height: 80px;
+        }
         .modal-footer {
             padding: 16px 20px 20px 20px;
             border-top: 1px solid #e5e7eb;
@@ -438,6 +442,43 @@
                 </div>
             </div>
 
+            <!-- Merchant Registration -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Daftar Merchant</h2>
+
+                @if(Auth::user()->merchant)
+                    <div class="menu-item">
+                        <a href="/merchant/dashboard" class="menu-link">
+                            <div class="menu-icon bg-green-100 text-green-600">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="menu-content">
+                                <div class="menu-title">Dashboard Merchant</div>
+                                <div class="menu-subtitle">Kelola {{ Auth::user()->merchant->name }}</div>
+                            </div>
+                            <div class="menu-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+                @else
+                    <div class="menu-item">
+                        <a href="#" onclick="openMerchantRegistration()" class="menu-link">
+                            <div class="menu-icon bg-orange-100 text-orange-600">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="menu-content">
+                                <div class="menu-title">Daftar Sebagai Merchant</div>
+                                <div class="menu-subtitle">Kelola lapangan futsal Anda</div>
+                            </div>
+                            <div class="menu-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+                @endif
+            </div>
+
             <!-- Account Actions -->
             <div class="mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Aksi Akun</h2>
@@ -533,6 +574,148 @@
         </div>
     </div>
 
+    <!-- Merchant Registration Modal -->
+    <div id="merchantRegistrationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Daftar Sebagai Merchant</h3>
+            </div>
+            <div class="modal-body">
+                <form id="merchantRegistrationForm">
+                    <div class="form-group">
+                        <label class="form-label">Nama Lapangan</label>
+                        <input type="text" id="merchantName" name="name" class="form-input" placeholder="Contoh: Futsal Center Jakarta" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Alamat</label>
+                        <textarea id="merchantAddress" name="address" class="form-input" rows="3" placeholder="Alamat lengkap lapangan" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nomor Telepon</label>
+                        <input type="text" id="merchantPhone" name="phone" class="form-input" placeholder="Contoh: 021-1234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jam Buka</label>
+                        <select id="merchantOpen" name="open" class="form-input" required>
+                            <option value="">Pilih jam buka</option>
+                            @for($i = 0; $i <= 24; $i++)
+                                <option value="{{ $i }}">{{ sprintf('%02d:00', $i) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jam Tutup</label>
+                        <select id="merchantClose" name="close" class="form-input" required>
+                            <option value="">Pilih jam tutup</option>
+                            @for($i = 0; $i <= 24; $i++)
+                                <option value="{{ $i }}">{{ sprintf('%02d:00', $i) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="merchantStatus" name="status" class="form-input" required>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeMerchantRegistration()" class="btn btn-secondary">Batal</button>
+                <button type="button" onclick="saveMerchantRegistration()" class="btn btn-primary">Daftar Merchant</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Merchant Registration Modal -->
+    <div id="merchantRegistrationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Daftar Sebagai Merchant</h3>
+            </div>
+            <div class="modal-body">
+                <form id="merchantRegistrationForm">
+                    <div class="form-group">
+                        <label class="form-label">Nama Tempat</label>
+                        <input type="text" id="merchantName" name="name" class="form-input" placeholder="Contoh: Futsal Center Jakarta" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Alamat</label>
+                        <textarea id="merchantAddress" name="address" class="form-input" rows="3" placeholder="Alamat lengkap tempat futsal" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nomor Telepon</label>
+                        <input type="tel" id="merchantPhone" name="phone" class="form-input" placeholder="Contoh: 021-1234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jam Buka</label>
+                        <select id="merchantOpen" name="open" class="form-input" required>
+                            <option value="">Pilih jam buka</option>
+                            <option value="6">06:00</option>
+                            <option value="7">07:00</option>
+                            <option value="8">08:00</option>
+                            <option value="9">09:00</option>
+                            <option value="10">10:00</option>
+                            <option value="11">11:00</option>
+                            <option value="12">12:00</option>
+                            <option value="13">13:00</option>
+                            <option value="14">14:00</option>
+                            <option value="15">15:00</option>
+                            <option value="16">16:00</option>
+                            <option value="17">17:00</option>
+                            <option value="18">18:00</option>
+                            <option value="19">19:00</option>
+                            <option value="20">20:00</option>
+                            <option value="21">21:00</option>
+                            <option value="22">22:00</option>
+                            <option value="23">23:00</option>
+                            <option value="24">24:00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jam Tutup</label>
+                        <select id="merchantClose" name="close" class="form-input" required>
+                            <option value="">Pilih jam tutup</option>
+                            <option value="6">06:00</option>
+                            <option value="7">07:00</option>
+                            <option value="8">08:00</option>
+                            <option value="9">09:00</option>
+                            <option value="10">10:00</option>
+                            <option value="11">11:00</option>
+                            <option value="12">12:00</option>
+                            <option value="13">13:00</option>
+                            <option value="14">14:00</option>
+                            <option value="15">15:00</option>
+                            <option value="16">16:00</option>
+                            <option value="17">17:00</option>
+                            <option value="18">18:00</option>
+                            <option value="19">19:00</option>
+                            <option value="20">20:00</option>
+                            <option value="21">21:00</option>
+                            <option value="22">22:00</option>
+                            <option value="23">23:00</option>
+                            <option value="24">24:00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="merchantStatus" name="status" class="form-input" required>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeMerchantRegistration()" class="btn btn-secondary">Batal</button>
+                <button type="button" onclick="saveMerchantRegistration()" class="btn btn-primary">Daftar Merchant</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Custom Alert Functions
         function showCustomAlert(options) {
@@ -612,6 +795,106 @@
 
         function closeChangePassword() {
             document.getElementById('changePasswordModal').classList.remove('show');
+        }
+
+        // Merchant Registration Functions
+        function openMerchantRegistration() {
+            // Cek apakah user sudah memiliki merchant
+            @if(Auth::user()->merchant)
+                showCustomAlert({
+                    title: 'Info',
+                    message: 'Anda sudah terdaftar sebagai merchant',
+                    type: 'info'
+                });
+                return;
+            @endif
+
+            document.getElementById('merchantRegistrationModal').classList.add('show');
+        }
+
+        function closeMerchantRegistration() {
+            document.getElementById('merchantRegistrationModal').classList.remove('show');
+            document.getElementById('merchantRegistrationForm').reset();
+        }
+
+        function saveMerchantRegistration() {
+            const name = document.getElementById('merchantName').value;
+            const address = document.getElementById('merchantAddress').value;
+            const phone = document.getElementById('merchantPhone').value;
+            const open = document.getElementById('merchantOpen').value;
+            const close = document.getElementById('merchantClose').value;
+            const status = document.getElementById('merchantStatus').value;
+
+            if (!name || !address || !phone || !open || !close || !status) {
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Semua field harus diisi',
+                    type: 'error'
+                });
+                return;
+            }
+
+            if (parseInt(close) <= parseInt(open)) {
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Jam tutup harus lebih besar dari jam buka',
+                    type: 'error'
+                });
+                return;
+            }
+
+            // Validasi jam operasional minimal 1 jam
+            if (parseInt(close) - parseInt(open) < 1) {
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Minimal jam operasional adalah 1 jam',
+                    type: 'error'
+                });
+                return;
+            }
+
+            fetch('/merchant/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    address: address,
+                    phone: phone,
+                    open: parseInt(open),
+                    close: parseInt(close),
+                    status: status
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                showCustomAlert({
+                    title: 'Berhasil!',
+                    message: data.message || 'Merchant berhasil didaftarkan',
+                    type: 'success',
+                    onConfirm: () => {
+                        closeMerchantRegistration();
+                        // Redirect ke merchant dashboard jika berhasil
+                        window.location.href = '/merchant/dashboard';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Terjadi kesalahan saat mendaftar merchant',
+                    type: 'error'
+                });
+            });
         }
 
         // Profile Functions
@@ -733,6 +1016,69 @@
             });
         }
 
+        // Merchant Registration Functions
+        function saveMerchantRegistration() {
+            const formData = new FormData(document.getElementById('merchantRegistrationForm'));
+            const data = {
+                name: formData.get('name'),
+                address: formData.get('address'),
+                phone: formData.get('phone'),
+                open: parseInt(formData.get('open')),
+                close: parseInt(formData.get('close')),
+                status: formData.get('status')
+            };
+
+            // Validasi jam operasional
+            if (data.open >= data.close) {
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Jam tutup harus lebih besar dari jam buka',
+                    type: 'error'
+                });
+                return;
+            }
+
+            fetch('/api/merchants', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer {{ Auth::user() ? Auth::user()->createToken("web-token")->plainTextToken : "" }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.message) {
+                    showCustomAlert({
+                        title: 'Berhasil!',
+                        message: data.message + '. Anda sekarang dapat mengakses dashboard merchant.',
+                        type: 'success'
+                    });
+                    closeMerchantRegistration();
+                    // Redirect ke merchant dashboard setelah 2 detik
+                    setTimeout(() => {
+                        window.location.href = '/merchant/dashboard';
+                    }, 2000);
+                } else {
+                    throw new Error('Response tidak valid');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Terjadi kesalahan saat mendaftar sebagai merchant',
+                    type: 'error'
+                });
+            });
+        }
+
         // Other Functions
         function openBookingHistory() {
             showCustomAlert({
@@ -800,6 +1146,20 @@
                 // Clear the message
                 sessionStorage.removeItem('profileMessage');
                 sessionStorage.removeItem('profileMessageType');
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
             }
         });
     </script>
