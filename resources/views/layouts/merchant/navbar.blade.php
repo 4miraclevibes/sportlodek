@@ -1,7 +1,7 @@
 <!-- Status Bar -->
 <div class="status-bar">
     <div class="flex items-center">
-        <span class="text-xs">{{ date('H:i') }}</span>
+        <span class="text-xs" id="current-time">{{ date('H:i') }}</span>
     </div>
     <div class="flex items-center space-x-1">
         <i class="fas fa-signal text-xs"></i>
@@ -9,6 +9,26 @@
         <i class="fas fa-battery-three-quarters text-xs"></i>
     </div>
 </div>
+
+<script>
+function updateTime() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const timeString = `${hours}:${minutes}`;
+
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.textContent = timeString;
+    }
+}
+
+// Update waktu setiap detik
+setInterval(updateTime, 1000);
+
+// Update waktu saat halaman dimuat
+document.addEventListener('DOMContentLoaded', updateTime);
+</script>
 
 <!-- Header -->
 <div class="bg-white border-b border-gray-200 px-4 py-3">
