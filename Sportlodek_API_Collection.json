@@ -297,7 +297,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"merchant_id\": 1,\n    \"name\": \"Lapangan A\",\n    \"price\": 150000\n}"
+							"raw": "{\n    \"name\": \"Lapangan A\",\n    \"price\": 150000\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/products",
@@ -329,6 +329,29 @@
 							"mode": "raw",
 							"raw": "{\n    \"name\": \"Lapangan A Updated\",\n    \"price\": 175000\n}"
 						},
+						"url": {
+							"raw": "{{base_url}}/products/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/products/1",
 							"host": [
@@ -382,6 +405,140 @@
 								"{{base_url}}"
 							],
 							"path": [
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/products/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Merchant Product Management",
+			"item": [
+				{
+					"name": "Create Merchant Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-CSRF-TOKEN",
+								"value": "{{csrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Lapangan A\",\n    \"price\": 150000\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/merchant/products",
+							"host": [
+								"http://localhost:8000"
+							],
+							"path": [
+								"merchant",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Merchant Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-CSRF-TOKEN",
+								"value": "{{csrf_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Lapangan A Updated\",\n    \"price\": 175000\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/merchant/products/1",
+							"host": [
+								"http://localhost:8000"
+							],
+							"path": [
+								"merchant",
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Merchant Product Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/merchant/products/1",
+							"host": [
+								"http://localhost:8000"
+							],
+							"path": [
+								"merchant",
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Merchant Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-CSRF-TOKEN",
+								"value": "{{csrf_token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8000/merchant/products/1",
+							"host": [
+								"http://localhost:8000"
+							],
+							"path": [
+								"merchant",
 								"products",
 								"1"
 							]
@@ -833,6 +990,11 @@
 		},
 		{
 			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "csrf_token",
 			"value": "",
 			"type": "string"
 		}

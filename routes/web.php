@@ -20,22 +20,22 @@ Route::get('/merchant/{merchantId}/details', [WelcomeController::class, 'getMerc
 Route::get('/merchant/all', [WelcomeController::class, 'getAllMerchants'])->name('merchant.all');
 
 // Test route untuk debug role
-Route::get('/test-role', function () {
-    if (Auth::check()) {
-        $user = Auth::user();
-        return response()->json([
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'is_merchant' => $user->isMerchant(),
-            'is_regular_user' => $user->isRegularUser(),
-            'role' => $user->getRole(),
-            'has_merchant' => $user->merchant ? 'Yes' : 'No',
-            'merchant_name' => $user->merchant?->name ?? 'N/A'
-        ]);
-    }
-    return response()->json(['message' => 'Not authenticated']);
-})->middleware('auth');
+// Route::get('/test-role', function () {
+//     if (Auth::check()) {
+//         $user = Auth::user();
+//         return response()->json([
+//             'user_id' => $user->id,
+//             'name' => $user->name,
+//             'email' => $user->email,
+//             'is_merchant' => $user->isMerchant(),
+//             'is_regular_user' => $user->isRegularUser(),
+//             'role' => $user->getRole(),
+//             'has_merchant' => $user->merchant ? 'Yes' : 'No',
+//             'merchant_name' => $user->merchant?->name ?? 'N/A'
+//         ]);
+//     }
+//     return response()->json(['message' => 'Not authenticated']);
+// })->middleware('auth');
 
 // Auth required routes with role validation
 Route::middleware(['auth', 'check.role'])->group(function () {
@@ -50,6 +50,10 @@ Route::middleware(['auth', 'check.role'])->group(function () {
     Route::prefix('merchant')->name('merchant.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/products', [ProductController::class, 'index'])->name('products');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments');
         Route::get('/profile', [MerchantProfileController::class, 'index'])->name('profile');

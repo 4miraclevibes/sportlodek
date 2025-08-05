@@ -25,17 +25,34 @@ class ProductController extends Controller
             ], 401);
         }
 
+        // Cek apakah user adalah merchant
+        $user = Auth::user();
+        if (!$user->merchant) {
+            return response()->json([
+                'message' => 'Akses ditolak: Hanya merchant yang dapat menambah lapangan.',
+                'error' => 'UNAUTHORIZED',
+                'hint' => 'Anda harus menjadi merchant untuk mengakses fitur ini'
+            ], 403);
+        }
+
+        // Ambil merchant_id dari user yang login
+        $merchant = $user->merchant;
+        if (!$merchant) {
+            return response()->json([
+                'message' => 'Merchant tidak ditemukan.',
+                'error' => 'MERCHANT_NOT_FOUND',
+                'hint' => 'Data merchant tidak ditemukan'
+            ], 404);
+        }
+
         // Definisikan rules validasi
         $rules = [
-            'merchant_id' => 'required|exists:merchants,id',
             'name' => 'required|string|max:255',
             'price' => 'required|integer|min:0',
         ];
 
         // Custom pesan error per field
         $messages = [
-            'merchant_id.required' => 'Merchant wajib diisi.',
-            'merchant_id.exists' => 'Merchant tidak ditemukan.',
             'name.required' => 'Nama lapangan wajib diisi.',
             'name.string' => 'Nama lapangan harus berupa teks.',
             'name.max' => 'Nama lapangan maksimal 255 karakter.',
@@ -55,7 +72,11 @@ class ProductController extends Controller
             ], 422);
         }
 
-        $product = Product::create($validator->validated());
+        // Tambahkan merchant_id dari user yang login
+        $data = $validator->validated();
+        $data['merchant_id'] = $merchant->id;
+
+        $product = Product::create($data);
 
         return response()->json([
             'message' => 'Lapangan berhasil ditambahkan',
@@ -77,17 +98,33 @@ class ProductController extends Controller
             ], 401);
         }
 
+        // Cek apakah user adalah merchant
+        $user = Auth::user();
+        if (!$user->merchant) {
+            return response()->json([
+                'message' => 'Akses ditolak: Hanya merchant yang dapat mengedit lapangan.',
+                'error' => 'UNAUTHORIZED',
+                'hint' => 'Anda harus menjadi merchant untuk mengakses fitur ini'
+            ], 403);
+        }
+
+        // Cek apakah product milik merchant yang login
+        if ($product->merchant_id !== $user->merchant->id) {
+            return response()->json([
+                'message' => 'Akses ditolak: Anda hanya dapat mengedit lapangan Anda sendiri.',
+                'error' => 'UNAUTHORIZED',
+                'hint' => 'Lapangan ini bukan milik Anda'
+            ], 403);
+        }
+
         // Definisikan rules validasi
         $rules = [
-            'merchant_id' => 'sometimes|required|exists:merchants,id',
             'name' => 'sometimes|required|string|max:255',
             'price' => 'sometimes|required|integer|min:0',
         ];
 
         // Custom pesan error per field
         $messages = [
-            'merchant_id.required' => 'Merchant wajib diisi.',
-            'merchant_id.exists' => 'Merchant tidak ditemukan.',
             'name.required' => 'Nama lapangan wajib diisi.',
             'name.string' => 'Nama lapangan harus berupa teks.',
             'name.max' => 'Nama lapangan maksimal 255 karakter.',
@@ -136,6 +173,46 @@ class ProductController extends Controller
     }
 
     /**
+     * Delete the specified product
+     */
+    public function destroy(Product $product): JsonResponse
+    {
+        // Cek dulu apakah user sudah login
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Akses ditolak: Anda belum login atau token tidak valid.',
+                'error' => 'UNAUTHENTICATED',
+                'hint' => 'Pastikan sudah login dan mengirimkan Authorization: Bearer <token>'
+            ], 401);
+        }
+
+        // Cek apakah user adalah merchant
+        $user = Auth::user();
+        if (!$user->merchant) {
+            return response()->json([
+                'message' => 'Akses ditolak: Hanya merchant yang dapat menghapus lapangan.',
+                'error' => 'UNAUTHORIZED',
+                'hint' => 'Anda harus menjadi merchant untuk mengakses fitur ini'
+            ], 403);
+        }
+
+        // Cek apakah product milik merchant yang login
+        if ($product->merchant_id !== $user->merchant->id) {
+            return response()->json([
+                'message' => 'Akses ditolak: Anda hanya dapat menghapus lapangan Anda sendiri.',
+                'error' => 'UNAUTHORIZED',
+                'hint' => 'Lapangan ini bukan milik Anda'
+            ], 403);
+        }
+
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Lapangan berhasil dihapus'
+        ]);
+    }
+
+    /**
      * Get product details with availability
      */
     public function show(Product $product): JsonResponse
@@ -161,4 +238,5 @@ class ProductController extends Controller
             ]
         ]);
     }
+
 }

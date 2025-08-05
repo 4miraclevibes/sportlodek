@@ -258,21 +258,94 @@
         @include('layouts.merchant.footer')
     </div>
 
+    <!-- Modal Tambah/Edit Lapangan -->
+    <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg w-full max-w-md">
+                <div class="p-6">
+                    <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 mb-4">Tambah Lapangan</h3>
+                    
+                    <form id="productForm">
+                        <input type="hidden" id="productId" name="product_id">
+                        
+                        <div class="mb-4">
+                            <label for="productName" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Lapangan
+                            </label>
+                            <input type="text" id="productName" name="name" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="productPrice" class="block text-sm font-medium text-gray-700 mb-2">
+                                Harga per Jam
+                            </label>
+                            <input type="number" id="productPrice" name="price" required min="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                   placeholder="150000">
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button type="button" onclick="closeProductModal()"
+                                    class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                                Simpan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let currentProductId = null;
+
         function showAddProductModal() {
-            showCustomAlert({
-                title: 'Tambah Lapangan',
-                message: 'Fitur tambah lapangan akan segera hadir!',
-                type: 'info'
-            });
+            currentProductId = null;
+            document.getElementById('modalTitle').textContent = 'Tambah Lapangan';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productModal').classList.remove('hidden');
         }
 
         function editProduct(productId) {
-            showCustomAlert({
-                title: 'Edit Lapangan',
-                message: 'Fitur edit lapangan akan segera hadir!',
-                type: 'info'
+            currentProductId = productId;
+            document.getElementById('modalTitle').textContent = 'Edit Lapangan';
+            
+            // Fetch product data
+            fetch(`/merchant/products/${productId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.data) {
+                    document.getElementById('productId').value = data.data.id;
+                    document.getElementById('productName').value = data.data.name;
+                    document.getElementById('productPrice').value = data.data.price;
+                    document.getElementById('productModal').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Gagal mengambil data lapangan',
+                    type: 'error'
+                });
             });
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+            document.getElementById('productForm').reset();
         }
 
         function deleteProduct(productId) {
@@ -283,13 +356,136 @@
                 confirmText: 'Ya, Hapus',
                 cancelText: 'Batal',
                 onConfirm: () => {
-                    showCustomAlert({
-                        title: 'Berhasil',
-                        message: 'Lapangan berhasil dihapus',
-                        type: 'success'
+                    fetch(`/merchant/products/${productId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        showCustomAlert({
+                            title: 'Berhasil',
+                            message: data.message || 'Lapangan berhasil dihapus',
+                            type: 'success'
+                        });
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showCustomAlert({
+                            title: 'Error',
+                            message: 'Gagal menghapus lapangan',
+                            type: 'error'
+                        });
                     });
                 }
             });
+        }
+
+        // Handle form submission
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                price: parseInt(formData.get('price'))
+            };
+
+            const url = currentProductId 
+                ? `/merchant/products/${currentProductId}`
+                : '/merchant/products';
+            
+            const method = currentProductId ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showCustomAlert({
+                        title: 'Berhasil',
+                        message: data.message,
+                        type: 'success'
+                    });
+                    closeProductModal();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error('Response tidak valid');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCustomAlert({
+                    title: 'Error',
+                    message: 'Gagal menyimpan lapangan',
+                    type: 'error'
+                });
+            });
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductModal();
+            }
+        });
+
+        // Custom Alert Function
+        function showCustomAlert(options) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'custom-alert';
+            alertDiv.innerHTML = `
+                <div class="alert-content">
+                    <div class="alert-header">
+                        <div class="alert-icon ${options.type || 'info'}">
+                            ${options.type === 'success' ? '<i class="fas fa-check"></i>' : 
+                              options.type === 'error' ? '<i class="fas fa-times"></i>' :
+                              options.type === 'warning' ? '<i class="fas fa-exclamation-triangle"></i>' :
+                              '<i class="fas fa-info"></i>'}
+                        </div>
+                        <div class="alert-title">${options.title}</div>
+                        <div class="alert-message">${options.message}</div>
+                    </div>
+                    <div class="alert-buttons">
+                        ${options.cancelText ? `<button class="alert-button secondary" onclick="closeCustomAlert()">${options.cancelText}</button>` : ''}
+                        <button class="alert-button primary" onclick="handleCustomAlertConfirm()">${options.confirmText || 'OK'}</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.classList.add('show'), 10);
+            
+            // Store callback
+            window.customAlertCallback = options.onConfirm;
+        }
+
+        function closeCustomAlert() {
+            const alert = document.querySelector('.custom-alert');
+            if (alert) {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+
+        function handleCustomAlertConfirm() {
+            if (window.customAlertCallback) {
+                window.customAlertCallback();
+            }
+            closeCustomAlert();
         }
     </script>
 </body>
