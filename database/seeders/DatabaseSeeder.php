@@ -80,7 +80,7 @@ class DatabaseSeeder extends Seeder
         Merchant::create([
             'user_id' => 1,
             'name' => 'Ahmad Futsal Center',
-            'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+            'address' => 'Jl. Imam Bonjol No. 123, Padang',
             'phone' => '021-1234567',
             'status' => 'active',
             'open' => 8, // 08:00
@@ -92,7 +92,7 @@ class DatabaseSeeder extends Seeder
         Merchant::create([
             'user_id' => 2,
             'name' => 'Budi Sport Center',
-            'address' => 'Jl. Thamrin No. 456, Jakarta Pusat',
+            'address' => 'Jl. Sudirman No. 456, Padang',
             'phone' => '021-7654321',
             'status' => 'active',
             'open' => 9, // 09:00
@@ -104,7 +104,7 @@ class DatabaseSeeder extends Seeder
         Merchant::create([
             'user_id' => 3,
             'name' => 'Citra Futsal Arena',
-            'address' => 'Jl. Gatot Subroto No. 789, Jakarta Selatan',
+            'address' => 'Jl. Khatib Sulaiman No. 789, Padang',
             'phone' => '021-9876543',
             'status' => 'active',
             'open' => 7, // 07:00
